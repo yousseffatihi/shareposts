@@ -10,6 +10,16 @@
                 <a class="nav-link" href="<?php echo URLROOT . '/pages/about'; ?>">About</a>
             </li>
         </ul>
+        <?php if(isset($_SESSION['user_id'])) : ?>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="#">Hi <?php echo $_SESSION['user_name']; ?></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="<?php echo URLROOT . '/users/logout'; ?>">Logout</a>
+            </li>
+        </ul>
+        <?php else : ?>
         <ul class="navbar-nav ml-auto">
             <li class="nav-item active">
                 <a class="nav-link" href="<?php echo URLROOT . '/users/register'; ?>">Register</a>
@@ -18,5 +28,6 @@
                 <a class="nav-link" href="<?php echo URLROOT . '/users/login'; ?>">Login</a>
             </li>
         </ul>
+        <?php endif; ?>
     </div>
 </nav>

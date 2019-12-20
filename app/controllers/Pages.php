@@ -8,6 +8,9 @@
 
         public function index()
         {
+            if(isLoggedIn()){
+                redirect('posts/');
+            }
             $data = [
                 'title' => 'Welcome',
                 'description' => 'Simple Social network built on Simple MVC PHP Framework'

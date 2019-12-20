@@ -1,10 +1,9 @@
 <?php
-
     class Users extends Controller{
 
         public function __construct()
         {
-
+            $this->userModel = $this->model('User');
         }
 
         public function register(){
@@ -53,7 +52,17 @@
 
                 //Make sure errors are empty
                 if(empty($data['email_err']) && empty($data['name_err']) && empty($data['password_err']) && empty($data['confirm_password_err'])){
-                    die('SUCCESS');
+                    //Validated
+
+                    //Hash Password
+                    $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+
+                    //Register User
+                    if($this->userModel->register($data)){
+                        redirect('/users/login');
+                    } else {
+                        die('Something went wrong');
+                    }
                 }else {
                     $this->view('users/register', $data);
                 }
@@ -101,9 +110,28 @@
                     $data['password_err'] = 'Password must be at least 6 characters';
                 }
 
+                //Check for user/email
+                if($this->userModel->findUserByEmail($data['email'])){
+                    //User Found
+                    //TODO
+                }else {
+                    //Sending an error because user not found
+                    $data['email_err'] = 'No user found';
+                }
+
                 //Make sure errors are empty
                 if(empty($data['email_err']) && empty($data['password_err'])){
-                    die('SUCCESS');
+                    //Validated
+                    //Check and set logged in user
+                    $loggedInUser = $this->userModel->login($data['email'], $data['password']);
+                    if($loggedInUser){
+                        //Create Session variables
+                        $this->createUserSession($loggedInUser);
+                    }else {
+                        $data['password_err'] = 'Password Incorrect';
+                        //Render the view
+                        $this->view('/users/login', $data);
+                    }
                 }else {
                     $this->view('users/login', $data);
                 }
@@ -119,5 +147,33 @@
                 //Load View
                 $this->view('/users/login',$data);
             }
+        }
+        
+        public function createUserSession($user)
+        {
+            session_start();
+            $_SESSION['user_id'] = $user->id;
+            $_SESSION['user_email'] = $user->email;
+            $_SESSION['user_name'] = $user->name;
+            redirect('posts');
+        }
+
+        public function logout()
+        {
+            session_start();
+            unset($_SESSION['user_id']);
+            unset($_SESSION['user_email']);
+            unset($_SESSION['user_name']);
+            session_destroy();
+            redirect('users/login');
+        }
+
+        public function isLoggedIn()
+        {
+            session_start();
+            if (isset($_SESSION['user_id'])) {
+                return true;
+            }
+            return false;
         }
     }
